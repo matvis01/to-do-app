@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { Store } from "@ngrx/store";
 import * as TaskActions from "./tasks/store/task.actions";
@@ -14,10 +14,8 @@ import * as TaskActions from "./tasks/store/task.actions";
   `,
   styles: [],
 })
-export class AppComponent implements OnInit {
-  constructor(private store: Store) {}
-
-  ngOnInit(): void {
+export class AppComponent {
+  constructor(private store: Store) {
     // Load tasks immediately when app initializes
     this.store.dispatch(TaskActions.loadTasks());
   }

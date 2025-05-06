@@ -91,21 +91,45 @@ import { MaterialModule } from "../../../shared/material.module";
             for="dueDate"
             class="block text-sm font-medium text-gray-700 mb-1"
           >
-            Due Date <span class="text-gray-400 text-xs">(optional)</span>
+            Due Date & Time
+            <span class="text-gray-400 text-xs">(optional)</span>
           </label>
-          <mat-form-field appearance="outline" class="w-full">
-            <input
-              matInput
-              [matDatepicker]="picker"
-              formControlName="dueDate"
-              placeholder="Choose a date"
-            />
-            <mat-datepicker-toggle
-              matIconSuffix
-              [for]="picker"
-            ></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-          </mat-form-field>
+
+          <!-- Date and time pickers in a flex row -->
+          <div class="flex flex-wrap gap-2">
+            <!-- Date picker -->
+            <div class="flex-1 min-w-[200px]">
+              <mat-form-field appearance="outline" class="w-full">
+                <input
+                  matInput
+                  [matDatepicker]="picker"
+                  formControlName="dueDate"
+                  placeholder="Choose a date"
+                />
+                <mat-datepicker-toggle
+                  matIconSuffix
+                  [for]="picker"
+                ></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+              </mat-form-field>
+            </div>
+
+            <!-- Time picker -->
+            <div class="flex-1 min-w-[200px]">
+              <mat-form-field appearance="outline" class="w-full">
+                <input
+                  matInput
+                  formControlName="dueTime"
+                  [ngxMatTimepicker]="timePicker"
+                  placeholder="Choose a time"
+                />
+                <mat-icon matSuffix (click)="timePicker.open()"
+                  >schedule</mat-icon
+                >
+                <ngx-mat-timepicker #timePicker></ngx-mat-timepicker>
+              </mat-form-field>
+            </div>
+          </div>
         </div>
 
         <div class="flex justify-end space-x-2">
@@ -173,17 +197,32 @@ export class TaskFormComponent implements OnInit, OnChanges {
       completed: [false],
       createdAt: [new Date()],
       dueDate: [null],
+      dueTime: [null],
     });
   }
 
   private populateForm(task: Task): void {
+    let dueTime = null;
+    let dueDate = null;
+
+    if (task.dueDate) {
+      const date = new Date(task.dueDate);
+      dueDate = date;
+
+      // Format time as HH:mm
+      const hours = date.getHours().toString().padStart(2, "0");
+      const minutes = date.getMinutes().toString().padStart(2, "0");
+      dueTime = `${hours}:${minutes}`;
+    }
+
     this.taskForm.patchValue({
       id: task.id,
       title: task.title,
       description: task.description || "",
       completed: task.completed,
       createdAt: task.createdAt,
-      dueDate: task.dueDate || null,
+      dueDate: dueDate,
+      dueTime: dueTime,
     });
   }
 
@@ -203,7 +242,43 @@ export class TaskFormComponent implements OnInit, OnChanges {
       const description = formValue.description
         ? formValue.description.trim()
         : undefined;
-      const dueDate = formValue.dueDate || undefined;
+      
+      // Combine date and time if both are provided
+      let dueDate = formValue.dueDate ? new Date(formValue.dueDate) : undefined;
+      
+      if (dueDate && formValue.dueTime) {
+        try {
+          // Parse the time string correctly
+          const timeString = formValue.dueTime;
+          // Log for debugging
+          console.log('Time string from picker:', timeString);
+          
+          // Handle different time formats that might come from the picker
+          let hours = 0;
+          let minutes = 0;
+          
+          if (timeString.includes(':')) {
+            const [h, m] = timeString.split(':');
+            hours = parseInt(h, 10);
+            minutes = parseInt(m, 10);
+          } else {
+            // If for some reason we get just hours
+            hours = parseInt(timeString, 10);
+          }
+          
+          // Make sure we have valid numbers
+          hours = isNaN(hours) ? 0 : hours;
+          minutes = isNaN(minutes) ? 0 : minutes;
+          
+          console.log(`Setting time to ${hours}:${minutes}`);
+          dueDate.setHours(hours, minutes, 0, 0);
+        } catch (error) {
+          console.error('Error setting time:', error);
+        }
+      } else if (dueDate) {
+        // If date is set but time is not, set time to start of day (midnight)
+        dueDate.setHours(0, 0, 0, 0);
+      }
 
       if (this.isEditMode) {
         const updatedTask: Task = {
@@ -236,6 +311,7 @@ export class TaskFormComponent implements OnInit, OnChanges {
       completed: false,
       createdAt: new Date(),
       dueDate: null,
+      dueTime: null,
     });
 
     Object.keys(this.taskForm.controls).forEach((key) => {

@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter } from "@angular/core";
+import { Component, Output, EventEmitter } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { Store } from "@ngrx/store";
 import { Observable } from "rxjs";
@@ -100,7 +100,7 @@ import { TaskItemComponent } from "../task-item/task-item.component";
   `,
   styles: [],
 })
-export class TaskListComponent implements OnInit {
+export class TaskListComponent {
   filteredTasks$: Observable<Task[]>;
   loading$: Observable<boolean>;
   currentFilter$: Observable<string>;
@@ -112,10 +112,6 @@ export class TaskListComponent implements OnInit {
     this.loading$ = this.store.select(TaskSelectors.selectTasksLoading);
     this.currentFilter$ = this.store.select(TaskSelectors.selectCurrentFilter);
     this.dateFilter$ = this.store.select(TaskSelectors.selectDateFilter);
-  }
-
-  ngOnInit(): void {
-    this.store.dispatch(TaskActions.loadTasks());
   }
 
   onToggleStatus(id: string): void {

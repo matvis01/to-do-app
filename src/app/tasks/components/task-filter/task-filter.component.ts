@@ -5,7 +5,13 @@ import { Store } from "@ngrx/store";
 import { Observable } from "rxjs";
 import * as TaskActions from "../../store/task.actions";
 import * as TaskSelectors from "../../store/task.selectors";
-import { MatDatepickerInputEvent } from "@angular/material/datepicker";
+
+type FilterType = "all" | "active" | "completed";
+
+interface FilterOption {
+  value: FilterType;
+  label: string;
+}
 
 @Component({
   selector: "app-task-filter",
@@ -16,86 +22,36 @@ import { MatDatepickerInputEvent } from "@angular/material/datepicker";
       <div class="flex flex-wrap items-center justify-between gap-3">
         <!-- Status filters -->
         <div class="flex flex-wrap gap-2">
-          <button
-            (click)="setFilter('all')"
-            class="px-4 py-2 rounded-lg transition-all duration-200 flex items-center"
-            [class.bg-blue-600]="(currentFilter$ | async) === 'all'"
-            [class.text-white]="(currentFilter$ | async) === 'all'"
-            [class.bg-gray-100]="(currentFilter$ | async) !== 'all'"
-            [class.text-gray-700]="(currentFilter$ | async) !== 'all'"
-            [class.hover:bg-gray-200]="(currentFilter$ | async) !== 'all'"
-          >
-            <svg
-              *ngIf="(currentFilter$ | async) === 'all'"
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4 mr-1"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          <ng-container *ngFor="let option of filterOptions">
+            <button
+              (click)="setFilter(option.value)"
+              class="px-4 py-2 rounded-lg transition-all duration-200 flex items-center"
+              [class.bg-blue-600]="(currentFilter$ | async) === option.value"
+              [class.text-white]="(currentFilter$ | async) === option.value"
+              [class.bg-gray-100]="(currentFilter$ | async) !== option.value"
+              [class.text-gray-700]="(currentFilter$ | async) !== option.value"
+              [class.hover:bg-gray-200]="
+                (currentFilter$ | async) !== option.value
+              "
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            All
-          </button>
-
-          <button
-            (click)="setFilter('active')"
-            class="px-4 py-2 rounded-lg transition-all duration-200 flex items-center"
-            [class.bg-blue-600]="(currentFilter$ | async) === 'active'"
-            [class.text-white]="(currentFilter$ | async) === 'active'"
-            [class.bg-gray-100]="(currentFilter$ | async) !== 'active'"
-            [class.text-gray-700]="(currentFilter$ | async) !== 'active'"
-            [class.hover:bg-gray-200]="(currentFilter$ | async) !== 'active'"
-          >
-            <svg
-              *ngIf="(currentFilter$ | async) === 'active'"
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4 mr-1"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            Active
-          </button>
-
-          <button
-            (click)="setFilter('completed')"
-            class="px-4 py-2 rounded-lg transition-all duration-200 flex items-center"
-            [class.bg-blue-600]="(currentFilter$ | async) === 'completed'"
-            [class.text-white]="(currentFilter$ | async) === 'completed'"
-            [class.bg-gray-100]="(currentFilter$ | async) !== 'completed'"
-            [class.text-gray-700]="(currentFilter$ | async) !== 'completed'"
-            [class.hover:bg-gray-200]="(currentFilter$ | async) !== 'completed'"
-          >
-            <svg
-              *ngIf="(currentFilter$ | async) === 'completed'"
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4 mr-1"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            Completed
-          </button>
+              <svg
+                *ngIf="(currentFilter$ | async) === option.value"
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              {{ option.label }}
+            </button>
+          </ng-container>
         </div>
 
         <!-- Date filter button & clear button -->
@@ -150,6 +106,12 @@ export class TaskFilterComponent implements OnInit {
   selectedDate$: Observable<Date | null>;
   selectedDate: Date | null = null;
 
+  filterOptions: FilterOption[] = [
+    { value: "all", label: "All" },
+    { value: "active", label: "Active" },
+    { value: "completed", label: "Completed" },
+  ];
+
   constructor(private store: Store) {
     this.currentFilter$ = this.store.select(TaskSelectors.selectCurrentFilter);
     this.selectedDate$ = this.store.select(TaskSelectors.selectDateFilter);
@@ -162,7 +124,7 @@ export class TaskFilterComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  setFilter(filter: "all" | "active" | "completed"): void {
+  setFilter(filter: FilterType): void {
     this.store.dispatch(TaskActions.setTaskFilter({ filter }));
   }
 

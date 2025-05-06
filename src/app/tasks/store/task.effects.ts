@@ -9,15 +9,19 @@ import * as TaskActions from "./task.actions";
 export class TaskEffects {
   constructor(private actions$: Actions, private taskService: TaskService) {}
 
+  // Helper method for consistent error handling
+  private handleError(operation: string, error: any) {
+    console.error(`Error ${operation}:`, error);
+    return of({ type: `[Task] ${operation} Error`, payload: error });
+  }
+
   loadTasks$ = createEffect(() =>
     this.actions$.pipe(
       ofType(TaskActions.loadTasks),
       switchMap(() =>
         this.taskService.getTasks().pipe(
           map((tasks) => TaskActions.loadTasksSuccess({ tasks })),
-          catchError((error) =>
-            of({ type: "[Task] Load Tasks Error", payload: error })
-          )
+          catchError((error) => this.handleError("Load Tasks", error))
         )
       )
     )
@@ -29,9 +33,7 @@ export class TaskEffects {
       mergeMap(({ title, description, dueDate }) =>
         this.taskService.addTask(title, description, dueDate).pipe(
           map((task) => TaskActions.addTaskSuccess({ task })),
-          catchError((error) =>
-            of({ type: "[Task] Add Task Error", payload: error })
-          )
+          catchError((error) => this.handleError("Add Task", error))
         )
       )
     )
@@ -43,9 +45,7 @@ export class TaskEffects {
       mergeMap(({ task }) =>
         this.taskService.updateTask(task).pipe(
           map(() => TaskActions.updateTaskSuccess({ task })),
-          catchError((error) =>
-            of({ type: "[Task] Update Task Error", payload: error })
-          )
+          catchError((error) => this.handleError("Update Task", error))
         )
       )
     )
@@ -57,9 +57,7 @@ export class TaskEffects {
       mergeMap(({ id }) =>
         this.taskService.deleteTask(id).pipe(
           map(() => TaskActions.deleteTaskSuccess({ id })),
-          catchError((error) =>
-            of({ type: "[Task] Delete Task Error", payload: error })
-          )
+          catchError((error) => this.handleError("Delete Task", error))
         )
       )
     )
@@ -70,14 +68,11 @@ export class TaskEffects {
       ofType(TaskActions.toggleTaskStatus),
       mergeMap(({ id }) => {
         if (!id) {
-          // Handle case when ID is undefined or empty
           console.error("Task ID is undefined in toggleTaskStatus effect");
           return EMPTY;
         }
 
-        // First get the task
         return this.taskService.getTask(id).pipe(
-          // Only proceed if task exists
           filter(
             (task): task is NonNullable<typeof task> => task !== undefined
           ),
@@ -85,16 +80,10 @@ export class TaskEffects {
             const updatedTask = { ...task, completed: !task.completed };
             return this.taskService.updateTask(updatedTask).pipe(
               map(() => TaskActions.updateTaskSuccess({ task: updatedTask })),
-              catchError((error) => {
-                console.error("Error updating task:", error);
-                return of({ type: "[Task] Toggle Task Error", payload: error });
-              })
+              catchError((error) => this.handleError("Toggle Task", error))
             );
           }),
-          catchError((error) => {
-            console.error("Error getting task:", error);
-            return of({ type: "[Task] Toggle Task Error", payload: error });
-          })
+          catchError((error) => this.handleError("Get Task", error))
         );
       })
     )

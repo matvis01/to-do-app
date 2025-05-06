@@ -2,6 +2,12 @@ import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { Task } from "../../models/task.model";
 
+// Helper interface for task status styling
+interface TaskStatusClasses {
+  background: string;
+  text: string;
+}
+
 @Component({
   selector: "app-task-item",
   standalone: true,
@@ -73,14 +79,14 @@ import { Task } from "../../models/task.model";
             <!-- Date information in a compact format when not expanded -->
             <div *ngIf="!isExpanded" class="flex flex-wrap gap-2 mt-1">
               <div class="text-xs text-gray-500">
-                Created: {{ task.createdAt | date : "MMM d, y" }}
+                Created: {{ getFormattedCreatedDate() }}
               </div>
               <div
-                *ngIf="task.dueDate"
+                *ngIf="isValidDate(task.dueDate)"
                 class="text-xs"
                 [ngClass]="getTextColorClass()"
               >
-                Due: {{ task.dueDate | date : "MMM d, y" }}
+                Due: {{ getFormattedDueDate() }}
               </div>
             </div>
           </div>
@@ -139,7 +145,7 @@ import { Task } from "../../models/task.model";
         *ngIf="isExpanded"
         class="mt-3 pt-3 border-t border-gray-200 animate-fadeIn"
       >
-        <!-- Description section - show actual description or "No description added" -->
+        <!-- Description section -->
         <div
           class="text-sm text-gray-700 mb-3 p-2 bg-white border border-gray-200 rounded-md shadow-sm"
         >
@@ -165,7 +171,7 @@ import { Task } from "../../models/task.model";
           </div>
         </div>
 
-        <!-- Detailed date information in a card-like format -->
+        <!-- Detailed date information -->
         <div class="flex flex-wrap gap-2">
           <!-- Created date badge -->
           <div
@@ -173,7 +179,7 @@ import { Task } from "../../models/task.model";
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-3.5 w-3.5 mr-1 text-gray-500"
+              class="h-3.5 w-3.5 mr-1"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -186,14 +192,12 @@ import { Task } from "../../models/task.model";
               />
             </svg>
             <span class="text-gray-500 font-medium mr-1">Created:</span>
-            <span class="text-gray-700">{{
-              task.createdAt | date : "MMM d, y, h:mm a"
-            }}</span>
+            <span class="text-gray-700">{{ getFormattedCreatedDate('MMM d, y, h:mm a') }}</span>
           </div>
 
           <!-- Due date badge with conditional colors -->
           <div
-            *ngIf="task.dueDate"
+            *ngIf="isValidDate(task.dueDate)"
             class="rounded-lg px-3 py-1 text-xs flex items-center shadow-sm"
             [ngClass]="getDueDateClasses()"
           >
@@ -218,27 +222,11 @@ import { Task } from "../../models/task.model";
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            <span
-              class="font-medium mr-1"
-              [ngClass]="
-                isTaskOverdue()
-                  ? 'text-red-700'
-                  : isTaskDueSoon()
-                  ? 'text-amber-700'
-                  : 'text-emerald-700'
-              "
+            <span class="font-medium mr-1" [ngClass]="getStatusClasses().text"
               >Due:</span
             >
-            <span
-              [ngClass]="
-                isTaskOverdue()
-                  ? 'text-red-900'
-                  : isTaskDueSoon()
-                  ? 'text-amber-900'
-                  : 'text-emerald-900'
-              "
-            >
-              {{ task.dueDate | date : "MMM d, y, h:mm a" }}
+            <span [ngClass]="getStatusClasses().text">
+              {{ getFormattedDueDate('MMM d, y, h:mm a') }}
             </span>
           </div>
         </div>
@@ -272,6 +260,58 @@ export class TaskItemComponent {
 
   isExpanded = false;
 
+  // Helper method to check if a date is valid
+  isValidDate(date: any): boolean {
+    if (!date) return false;
+    const d = new Date(date);
+    return !isNaN(d.getTime());
+  }
+
+  // Format the created date with a default format
+  getFormattedCreatedDate(format: string = 'MMM d, y'): string {
+    if (!this.isValidDate(this.task.createdAt)) return 'Invalid date';
+    
+    const date = new Date(this.task.createdAt);
+    const options: Intl.DateTimeFormatOptions = {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    };
+    
+    if (format.includes('h:mm')) {
+      options.hour = 'numeric';
+      options.minute = 'numeric';
+      options.hour12 = true;
+    }
+    
+    return date.toLocaleDateString('en-US', options);
+  }
+
+  // Format the due date with a default format
+  getFormattedDueDate(format: string = 'MMM d, y'): string {
+    if (!this.task.dueDate || !this.isValidDate(this.task.dueDate)) {
+      return 'Invalid date';
+    }
+    
+    const date = new Date(this.task.dueDate);
+    const options: Intl.DateTimeFormatOptions = {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    };
+    
+    // Only show time if it's not midnight (00:00) - which indicates no time was selected
+    const hasTime = date.getHours() !== 0 || date.getMinutes() !== 0;
+    
+    if (format.includes('h:mm') && hasTime) {
+      options.hour = 'numeric';
+      options.minute = 'numeric';
+      options.hour12 = true;
+    }
+    
+    return date.toLocaleDateString('en-US', options);
+  }
+
   // Toggle the expanded state
   toggleDetails(): void {
     this.isExpanded = !this.isExpanded;
@@ -279,14 +319,20 @@ export class TaskItemComponent {
 
   // Calculate if a task is overdue (due date is in the past)
   isTaskOverdue(): boolean {
-    if (!this.task.dueDate) return false;
+    if (!this.task.dueDate || !this.isValidDate(this.task.dueDate) || this.task.completed) {
+      return false;
+    }
+    
     const dueDate = new Date(this.task.dueDate);
-    return dueDate < new Date() && !this.task.completed;
+    return dueDate < new Date();
   }
 
   // Calculate if a task is due soon (within the next 2 days)
   isTaskDueSoon(): boolean {
-    if (!this.task.dueDate || this.task.completed) return false;
+    if (!this.task.dueDate || !this.isValidDate(this.task.dueDate) || this.task.completed) {
+      return false;
+    }
+    
     const dueDate = new Date(this.task.dueDate);
     const today = new Date();
     const twoDaysFromNow = new Date();
@@ -295,17 +341,22 @@ export class TaskItemComponent {
     return dueDate > today && dueDate <= twoDaysFromNow;
   }
 
+  // Get status classes for styling based on task status
+  getStatusClasses(): TaskStatusClasses {
+    if (this.isTaskOverdue()) {
+      return { background: "bg-red-100", text: "text-red-900" };
+    } else if (this.isTaskDueSoon()) {
+      return { background: "bg-amber-100", text: "text-amber-900" };
+    } else if (this.task.completed) {
+      return { background: "bg-gray-100", text: "text-gray-500" };
+    } else {
+      return { background: "bg-emerald-100", text: "text-emerald-900" };
+    }
+  }
+
   // Get CSS classes for due date based on status
   getDueDateClasses(): string {
-    if (this.isTaskOverdue()) {
-      return "bg-red-100";
-    } else if (this.isTaskDueSoon()) {
-      return "bg-amber-100";
-    } else if (this.task.completed) {
-      return "bg-gray-100";
-    } else {
-      return "bg-emerald-100";
-    }
+    return this.getStatusClasses().background;
   }
 
   // Get text color class for compact due date display
