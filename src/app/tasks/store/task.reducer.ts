@@ -7,6 +7,7 @@ export interface TaskState {
   loading: boolean;
   error: string | null;
   filter: "all" | "active" | "completed";
+  dateFilter: Date | null;
 }
 
 export const initialState: TaskState = {
@@ -14,6 +15,7 @@ export const initialState: TaskState = {
   loading: false,
   error: null,
   filter: "all",
+  dateFilter: null,
 };
 
 export const taskReducer = createReducer(
@@ -55,5 +57,10 @@ export const taskReducer = createReducer(
   on(TaskActions.setTaskFilter, (state, { filter }) => ({
     ...state,
     filter,
+  })),
+
+  on(TaskActions.setDateFilter, (state, { date }) => ({
+    ...state,
+    dateFilter: date,
   }))
 );

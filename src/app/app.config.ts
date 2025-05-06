@@ -17,12 +17,14 @@ import { provideStoreDevtools } from "@ngrx/store-devtools";
 import { taskReducer } from "./tasks/store/task.reducer";
 import { TaskEffects } from "./tasks/store/task.effects";
 import { EffectsModule } from "@ngrx/effects";
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
+    importProvidersFrom(BrowserAnimationsModule), // Use importProvidersFrom instead of provideAnimations
     provideStore({ tasks: taskReducer }),
     importProvidersFrom(EffectsModule.forRoot([TaskEffects])),
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),

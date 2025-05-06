@@ -2,4 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Angular Material Theme */
+@import "@angular/material/prebuilt-themes/indigo-pink.css";
+
+/* Custom Material Styles */
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+.mat-datepicker-toggle {
+  color: #3b82f6; /* Tailwind blue-500 */
+}
+
+/* This ensures Angular Material components play nicely with Tailwind */
+mat-form-field.mat-mdc-form-field {
+  @apply w-full;
+}
+
 /* Add your global styles here */

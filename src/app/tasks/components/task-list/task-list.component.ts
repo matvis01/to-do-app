@@ -14,7 +14,15 @@ import { TaskItemComponent } from "../task-item/task-item.component";
   imports: [CommonModule, TaskItemComponent],
   template: `
     <div class="mt-6">
-      <h2 class="text-xl font-semibold mb-4">Your Tasks</h2>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Your Tasks</h2>
+        <div
+          *ngIf="dateFilter$ | async as dateFilter"
+          class="text-sm text-blue-600 bg-blue-100 px-3 py-1 rounded-full"
+        >
+          Showing tasks from {{ dateFilter | date : "mediumDate" }}
+        </div>
+      </div>
 
       <div *ngIf="loading$ | async" class="flex justify-center my-4">
         <div
@@ -48,12 +56,14 @@ export class TaskListComponent implements OnInit {
   filteredTasks$: Observable<Task[]>;
   loading$: Observable<boolean>;
   currentFilter$: Observable<string>;
+  dateFilter$: Observable<Date | null>;
   @Output() editTask = new EventEmitter<Task>();
 
   constructor(private store: Store) {
     this.filteredTasks$ = this.store.select(TaskSelectors.selectFilteredTasks);
     this.loading$ = this.store.select(TaskSelectors.selectTasksLoading);
     this.currentFilter$ = this.store.select(TaskSelectors.selectCurrentFilter);
+    this.dateFilter$ = this.store.select(TaskSelectors.selectDateFilter);
   }
 
   ngOnInit(): void {

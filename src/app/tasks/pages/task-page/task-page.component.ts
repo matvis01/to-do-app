@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common";
 import { TaskListComponent } from "../../components/task-list/task-list.component";
 import { TaskFormComponent } from "../../components/task-form/task-form.component";
 import { TaskFilterComponent } from "../../components/task-filter/task-filter.component";
+import { DateFilterComponent } from "../../components/date-filter/date-filter.component";
 import { Store } from "@ngrx/store";
 import { Observable, map } from "rxjs";
 import * as TaskSelectors from "../../store/task.selectors";
@@ -17,6 +18,7 @@ import { Task } from "../../models/task.model";
     TaskListComponent,
     TaskFormComponent,
     TaskFilterComponent,
+    DateFilterComponent,
   ],
   template: `
     <div class="container mx-auto px-4 py-8 max-w-4xl">
@@ -64,7 +66,10 @@ import { Task } from "../../models/task.model";
         </div>
 
         <div class="md:col-span-2">
-          <app-task-filter></app-task-filter>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <app-task-filter></app-task-filter>
+            <app-date-filter></app-date-filter>
+          </div>
           <app-task-list (editTask)="onEditTask($event)"></app-task-list>
         </div>
       </div>

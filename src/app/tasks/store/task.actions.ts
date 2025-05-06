@@ -43,3 +43,8 @@ export const setTaskFilter = createAction(
   "[Task] Set Task Filter",
   props<{ filter: "all" | "active" | "completed" }>()
 );
+
+export const setDateFilter = createAction(
+  "[Task] Set Date Filter",
+  props<{ date: Date | null }>()
+);

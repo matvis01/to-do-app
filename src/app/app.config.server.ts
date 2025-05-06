@@ -1,14 +1,14 @@
-import { mergeApplicationConfig, ApplicationConfig } from '@angular/core';
-import { provideServerRendering } from '@angular/platform-server';
-import { provideServerRouting } from '@angular/ssr';
-import { appConfig } from './app.config';
-import { serverRoutes } from './app.routes.server';
+import { mergeApplicationConfig } from "@angular/core";
+import { appConfig } from "./app.config";
+import { provideServerRendering } from "@angular/platform-server";
+import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { importProvidersFrom } from "@angular/core";
 
-const serverConfig: ApplicationConfig = {
+const serverConfig = {
   providers: [
     provideServerRendering(),
-    provideServerRouting(serverRoutes)
-  ]
+    importProvidersFrom(NoopAnimationsModule), // Use NoopAnimationsModule for server-side
+  ],
 };
 
 export const config = mergeApplicationConfig(appConfig, serverConfig);
