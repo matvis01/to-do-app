@@ -1,40 +1,45 @@
-import { createAction, props } from '@ngrx/store';
-import { Task } from '../models/task.model';
+import { createAction, props } from "@ngrx/store";
+import { Task } from "../models/task.model";
 
-export const loadTasks = createAction('[Task] Load Tasks');
+export const loadTasks = createAction("[Task] Load Tasks");
 export const loadTasksSuccess = createAction(
-  '[Task] Load Tasks Success',
+  "[Task] Load Tasks Success",
   props<{ tasks: Task[] }>()
 );
 
 export const addTask = createAction(
-  '[Task] Add Task',
+  "[Task] Add Task",
   props<{ title: string; description?: string }>()
 );
 export const addTaskSuccess = createAction(
-  '[Task] Add Task Success',
+  "[Task] Add Task Success",
   props<{ task: Task }>()
 );
 
 export const updateTask = createAction(
-  '[Task] Update Task',
+  "[Task] Update Task",
   props<{ task: Task }>()
 );
 export const updateTaskSuccess = createAction(
-  '[Task] Update Task Success',
+  "[Task] Update Task Success",
   props<{ task: Task }>()
 );
 
 export const deleteTask = createAction(
-  '[Task] Delete Task',
+  "[Task] Delete Task",
   props<{ id: string }>()
 );
 export const deleteTaskSuccess = createAction(
-  '[Task] Delete Task Success',
+  "[Task] Delete Task Success",
   props<{ id: string }>()
 );
 
 export const toggleTaskStatus = createAction(
-  '[Task] Toggle Task Status',
+  "[Task] Toggle Task Status",
   props<{ id: string }>()
+);
+
+export const setTaskFilter = createAction(
+  "[Task] Set Task Filter",
+  props<{ filter: "all" | "active" | "completed" }>()
 );

@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TaskListComponent } from "../../components/task-list/task-list.component";
 import { TaskFormComponent } from "../../components/task-form/task-form.component";
+import { TaskFilterComponent } from "../../components/task-filter/task-filter.component";
 import { Store } from "@ngrx/store";
 import { Observable, map } from "rxjs";
 import * as TaskSelectors from "../../store/task.selectors";
@@ -11,7 +12,12 @@ import { Task } from "../../models/task.model";
 @Component({
   selector: "app-task-page",
   standalone: true,
-  imports: [CommonModule, TaskListComponent, TaskFormComponent],
+  imports: [
+    CommonModule,
+    TaskListComponent,
+    TaskFormComponent,
+    TaskFilterComponent,
+  ],
   template: `
     <div class="container mx-auto px-4 py-8 max-w-4xl">
       <header class="mb-8 text-center">
@@ -58,6 +64,7 @@ import { Task } from "../../models/task.model";
         </div>
 
         <div class="md:col-span-2">
+          <app-task-filter></app-task-filter>
           <app-task-list (editTask)="onEditTask($event)"></app-task-list>
         </div>
       </div>

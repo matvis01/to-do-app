@@ -1,21 +1,19 @@
-import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { TaskState } from './task.reducer';
+import { createFeatureSelector, createSelector } from "@ngrx/store";
+import { TaskState } from "./task.reducer";
 
-export const selectTaskState = createFeatureSelector<TaskState>('tasks');
+export const selectTaskState = createFeatureSelector<TaskState>("tasks");
 
 export const selectAllTasks = createSelector(
   selectTaskState,
   (state: TaskState) => state.tasks
 );
 
-export const selectCompletedTasks = createSelector(
-  selectAllTasks,
-  (tasks) => tasks.filter(task => task.completed)
+export const selectCompletedTasks = createSelector(selectAllTasks, (tasks) =>
+  tasks.filter((task) => task.completed)
 );
 
-export const selectActiveTasks = createSelector(
-  selectAllTasks,
-  (tasks) => tasks.filter(task => !task.completed)
+export const selectActiveTasks = createSelector(selectAllTasks, (tasks) =>
+  tasks.filter((task) => !task.completed)
 );
 
 export const selectTasksLoading = createSelector(
@@ -26,4 +24,25 @@ export const selectTasksLoading = createSelector(
 export const selectTasksError = createSelector(
   selectTaskState,
   (state: TaskState) => state.error
+);
+
+export const selectCurrentFilter = createSelector(
+  selectTaskState,
+  (state: TaskState) => state.filter
+);
+
+export const selectFilteredTasks = createSelector(
+  selectAllTasks,
+  selectCurrentFilter,
+  (tasks, filter) => {
+    switch (filter) {
+      case "active":
+        return tasks.filter((task) => !task.completed);
+      case "completed":
+        return tasks.filter((task) => task.completed);
+      case "all":
+      default:
+        return tasks;
+    }
+  }
 );

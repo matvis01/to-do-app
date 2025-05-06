@@ -23,15 +23,17 @@ import { TaskItemComponent } from "../task-item/task-item.component";
       </div>
 
       <div
-        *ngIf="(tasks$ | async)?.length === 0 && !(loading$ | async)"
+        *ngIf="(filteredTasks$ | async)?.length === 0 && !(loading$ | async)"
         class="text-center py-6 bg-gray-50 rounded-lg"
       >
-        <p class="text-gray-500">No tasks yet. Create one to get started!</p>
+        <p class="text-gray-500">
+          No tasks found. {{ getEmptyStateMessage(currentFilter$ | async) }}
+        </p>
       </div>
 
-      <div class="space-y-3" *ngIf="(tasks$ | async)?.length">
+      <div class="space-y-3" *ngIf="(filteredTasks$ | async)?.length">
         <app-task-item
-          *ngFor="let task of tasks$ | async"
+          *ngFor="let task of filteredTasks$ | async"
           [task]="task"
           (toggleComplete)="onToggleStatus($event)"
           (delete)="onDeleteTask($event)"
@@ -43,13 +45,15 @@ import { TaskItemComponent } from "../task-item/task-item.component";
   styles: [],
 })
 export class TaskListComponent implements OnInit {
-  tasks$: Observable<Task[]>;
+  filteredTasks$: Observable<Task[]>;
   loading$: Observable<boolean>;
+  currentFilter$: Observable<string>;
   @Output() editTask = new EventEmitter<Task>();
 
   constructor(private store: Store) {
-    this.tasks$ = this.store.select(TaskSelectors.selectAllTasks);
+    this.filteredTasks$ = this.store.select(TaskSelectors.selectFilteredTasks);
     this.loading$ = this.store.select(TaskSelectors.selectTasksLoading);
+    this.currentFilter$ = this.store.select(TaskSelectors.selectCurrentFilter);
   }
 
   ngOnInit(): void {
@@ -66,5 +70,17 @@ export class TaskListComponent implements OnInit {
 
   onEditTask(task: Task): void {
     this.editTask.emit(task);
+  }
+
+  getEmptyStateMessage(filter: string | null): string {
+    switch (filter) {
+      case "active":
+        return "All tasks are completed!";
+      case "completed":
+        return "No completed tasks yet.";
+      case "all":
+      default:
+        return "Create one to get started!";
+    }
   }
 }
