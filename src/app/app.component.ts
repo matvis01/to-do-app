@@ -11,15 +11,6 @@ import * as TaskActions from "./tasks/store/task.actions";
     <main class="min-h-screen bg-gray-50">
       <router-outlet />
     </main>
-
-    <footer class="bg-white border-t py-4">
-      <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
-        <p>
-          © {{ currentYear }} To-Do List App. Built with Angular, NgRx, and
-          Tailwind CSS.
-        </p>
-      </div>
-    </footer>
   `,
   styles: [],
 })

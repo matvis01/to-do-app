@@ -23,8 +23,22 @@ import { Task } from "../../models/task.model";
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div class="bg-white p-6 rounded-lg shadow-sm border">
-      <h2 class="text-xl font-semibold mb-4">
+    <div>
+      <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 mr-2 text-blue-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+          />
+        </svg>
         {{ isEditMode ? "Edit Task" : "Add New Task" }}
       </h2>
 
@@ -40,8 +54,8 @@ import { Task } from "../../models/task.model";
             type="text"
             id="title"
             formControlName="title"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Enter task title"
+            class="form-control"
+            placeholder="What needs to be done?"
             #titleInput
           />
           <div
@@ -55,19 +69,19 @@ import { Task } from "../../models/task.model";
           </div>
         </div>
 
-        <div class="mb-4">
+        <div class="mb-5">
           <label
             for="description"
             class="block text-sm font-medium text-gray-700 mb-1"
           >
-            Description (optional)
+            Description <span class="text-gray-400 text-xs">(optional)</span>
           </label>
           <textarea
             id="description"
             formControlName="description"
             rows="3"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Enter task description"
+            class="form-control"
+            placeholder="Add details about this task..."
           ></textarea>
         </div>
 
@@ -76,15 +90,30 @@ import { Task } from "../../models/task.model";
             *ngIf="isEditMode"
             type="button"
             (click)="onCancel()"
-            class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            class="btn btn-secondary"
           >
             Cancel
           </button>
           <button
             type="submit"
             [disabled]="taskForm.invalid"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="btn"
+            [ngClass]="isEditMode ? 'btn-success' : 'btn-primary'"
           >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
             {{ isEditMode ? "Update Task" : "Add Task" }}
           </button>
         </div>
