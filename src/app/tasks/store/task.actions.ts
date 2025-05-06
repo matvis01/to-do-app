@@ -9,7 +9,7 @@ export const loadTasksSuccess = createAction(
 
 export const addTask = createAction(
   "[Task] Add Task",
-  props<{ title: string; description?: string }>()
+  props<{ title: string; description?: string; dueDate?: Date }>()
 );
 export const addTaskSuccess = createAction(
   "[Task] Add Task Success",

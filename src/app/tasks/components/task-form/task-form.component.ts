@@ -17,11 +17,12 @@ import {
 import { Store } from "@ngrx/store";
 import * as TaskActions from "../../store/task.actions";
 import { Task } from "../../models/task.model";
+import { MaterialModule } from "../../../shared/material.module";
 
 @Component({
   selector: "app-task-form",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MaterialModule],
   template: `
     <div>
       <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
@@ -83,6 +84,28 @@ import { Task } from "../../models/task.model";
             class="form-control"
             placeholder="Add details about this task..."
           ></textarea>
+        </div>
+
+        <div class="mb-5">
+          <label
+            for="dueDate"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Due Date <span class="text-gray-400 text-xs">(optional)</span>
+          </label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              matInput
+              [matDatepicker]="picker"
+              formControlName="dueDate"
+              placeholder="Choose a date"
+            />
+            <mat-datepicker-toggle
+              matIconSuffix
+              [for]="picker"
+            ></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
         </div>
 
         <div class="flex justify-end space-x-2">
@@ -149,6 +172,7 @@ export class TaskFormComponent implements OnInit, OnChanges {
       description: [""],
       completed: [false],
       createdAt: [new Date()],
+      dueDate: [null],
     });
   }
 
@@ -159,6 +183,7 @@ export class TaskFormComponent implements OnInit, OnChanges {
       description: task.description || "",
       completed: task.completed,
       createdAt: task.createdAt,
+      dueDate: task.dueDate || null,
     });
   }
 
@@ -178,6 +203,7 @@ export class TaskFormComponent implements OnInit, OnChanges {
       const description = formValue.description
         ? formValue.description.trim()
         : undefined;
+      const dueDate = formValue.dueDate || undefined;
 
       if (this.isEditMode) {
         const updatedTask: Task = {
@@ -186,12 +212,15 @@ export class TaskFormComponent implements OnInit, OnChanges {
           description,
           completed: formValue.completed,
           createdAt: formValue.createdAt,
+          dueDate,
         };
 
         this.store.dispatch(TaskActions.updateTask({ task: updatedTask }));
         this.cancelEdit.emit();
       } else {
-        this.store.dispatch(TaskActions.addTask({ title, description }));
+        this.store.dispatch(
+          TaskActions.addTask({ title, description, dueDate })
+        );
       }
 
       this.resetForm();
@@ -206,6 +235,7 @@ export class TaskFormComponent implements OnInit, OnChanges {
       description: "",
       completed: false,
       createdAt: new Date(),
+      dueDate: null,
     });
 
     Object.keys(this.taskForm.controls).forEach((key) => {

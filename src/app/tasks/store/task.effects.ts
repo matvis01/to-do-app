@@ -26,8 +26,8 @@ export class TaskEffects {
   addTask$ = createEffect(() =>
     this.actions$.pipe(
       ofType(TaskActions.addTask),
-      mergeMap(({ title, description }) =>
-        this.taskService.addTask(title, description).pipe(
+      mergeMap(({ title, description, dueDate }) =>
+        this.taskService.addTask(title, description, dueDate).pipe(
           map((task) => TaskActions.addTaskSuccess({ task })),
           catchError((error) =>
             of({ type: "[Task] Add Task Error", payload: error })

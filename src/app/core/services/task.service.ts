@@ -38,6 +38,7 @@ export class TaskService {
         this.tasks = parsedTasks.map((task: any) => ({
           ...task,
           createdAt: new Date(task.createdAt),
+          dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
         }));
       }
     } catch (error) {
@@ -90,13 +91,18 @@ export class TaskService {
     return of(task ? { ...task } : undefined); // Return a copy if found
   }
 
-  addTask(title: string, description?: string): Observable<Task> {
+  addTask(
+    title: string,
+    description?: string,
+    dueDate?: Date
+  ): Observable<Task> {
     const newTask: Task = {
       id: uuidv4(),
       title,
       description,
       completed: false,
       createdAt: new Date(),
+      dueDate,
     };
 
     this.tasks = [...this.tasks, newTask];
