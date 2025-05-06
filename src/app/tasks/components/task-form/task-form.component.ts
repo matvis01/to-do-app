@@ -242,38 +242,38 @@ export class TaskFormComponent implements OnInit, OnChanges {
       const description = formValue.description
         ? formValue.description.trim()
         : undefined;
-      
+
       // Combine date and time if both are provided
       let dueDate = formValue.dueDate ? new Date(formValue.dueDate) : undefined;
-      
+
       if (dueDate && formValue.dueTime) {
         try {
           // Parse the time string correctly
           const timeString = formValue.dueTime;
           // Log for debugging
-          console.log('Time string from picker:', timeString);
-          
+          console.log("Time string from picker:", timeString);
+
           // Handle different time formats that might come from the picker
           let hours = 0;
           let minutes = 0;
-          
-          if (timeString.includes(':')) {
-            const [h, m] = timeString.split(':');
+
+          if (timeString.includes(":")) {
+            const [h, m] = timeString.split(":");
             hours = parseInt(h, 10);
             minutes = parseInt(m, 10);
           } else {
             // If for some reason we get just hours
             hours = parseInt(timeString, 10);
           }
-          
+
           // Make sure we have valid numbers
           hours = isNaN(hours) ? 0 : hours;
           minutes = isNaN(minutes) ? 0 : minutes;
-          
+
           console.log(`Setting time to ${hours}:${minutes}`);
           dueDate.setHours(hours, minutes, 0, 0);
         } catch (error) {
-          console.error('Error setting time:', error);
+          console.error("Error setting time:", error);
         }
       } else if (dueDate) {
         // If date is set but time is not, set time to start of day (midnight)

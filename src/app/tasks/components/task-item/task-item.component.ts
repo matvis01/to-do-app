@@ -192,7 +192,9 @@ interface TaskStatusClasses {
               />
             </svg>
             <span class="text-gray-500 font-medium mr-1">Created:</span>
-            <span class="text-gray-700">{{ getFormattedCreatedDate('MMM d, y, h:mm a') }}</span>
+            <span class="text-gray-700">{{
+              getFormattedCreatedDate("MMM d, y, h:mm a")
+            }}</span>
           </div>
 
           <!-- Due date badge with conditional colors -->
@@ -226,7 +228,7 @@ interface TaskStatusClasses {
               >Due:</span
             >
             <span [ngClass]="getStatusClasses().text">
-              {{ getFormattedDueDate('MMM d, y, h:mm a') }}
+              {{ getFormattedDueDate("MMM d, y, h:mm a") }}
             </span>
           </div>
         </div>
@@ -268,48 +270,48 @@ export class TaskItemComponent {
   }
 
   // Format the created date with a default format
-  getFormattedCreatedDate(format: string = 'MMM d, y'): string {
-    if (!this.isValidDate(this.task.createdAt)) return 'Invalid date';
-    
+  getFormattedCreatedDate(format: string = "MMM d, y"): string {
+    if (!this.isValidDate(this.task.createdAt)) return "Invalid date";
+
     const date = new Date(this.task.createdAt);
     const options: Intl.DateTimeFormatOptions = {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     };
-    
-    if (format.includes('h:mm')) {
-      options.hour = 'numeric';
-      options.minute = 'numeric';
+
+    if (format.includes("h:mm")) {
+      options.hour = "numeric";
+      options.minute = "numeric";
       options.hour12 = true;
     }
-    
-    return date.toLocaleDateString('en-US', options);
+
+    return date.toLocaleDateString("en-US", options);
   }
 
   // Format the due date with a default format
-  getFormattedDueDate(format: string = 'MMM d, y'): string {
+  getFormattedDueDate(format: string = "MMM d, y"): string {
     if (!this.task.dueDate || !this.isValidDate(this.task.dueDate)) {
-      return 'Invalid date';
+      return "Invalid date";
     }
-    
+
     const date = new Date(this.task.dueDate);
     const options: Intl.DateTimeFormatOptions = {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     };
-    
+
     // Only show time if it's not midnight (00:00) - which indicates no time was selected
     const hasTime = date.getHours() !== 0 || date.getMinutes() !== 0;
-    
-    if (format.includes('h:mm') && hasTime) {
-      options.hour = 'numeric';
-      options.minute = 'numeric';
+
+    if (format.includes("h:mm") && hasTime) {
+      options.hour = "numeric";
+      options.minute = "numeric";
       options.hour12 = true;
     }
-    
-    return date.toLocaleDateString('en-US', options);
+
+    return date.toLocaleDateString("en-US", options);
   }
 
   // Toggle the expanded state
@@ -319,20 +321,28 @@ export class TaskItemComponent {
 
   // Calculate if a task is overdue (due date is in the past)
   isTaskOverdue(): boolean {
-    if (!this.task.dueDate || !this.isValidDate(this.task.dueDate) || this.task.completed) {
+    if (
+      !this.task.dueDate ||
+      !this.isValidDate(this.task.dueDate) ||
+      this.task.completed
+    ) {
       return false;
     }
-    
+
     const dueDate = new Date(this.task.dueDate);
     return dueDate < new Date();
   }
 
   // Calculate if a task is due soon (within the next 2 days)
   isTaskDueSoon(): boolean {
-    if (!this.task.dueDate || !this.isValidDate(this.task.dueDate) || this.task.completed) {
+    if (
+      !this.task.dueDate ||
+      !this.isValidDate(this.task.dueDate) ||
+      this.task.completed
+    ) {
       return false;
     }
-    
+
     const dueDate = new Date(this.task.dueDate);
     const today = new Date();
     const twoDaysFromNow = new Date();
