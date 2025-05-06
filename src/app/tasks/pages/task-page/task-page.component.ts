@@ -6,6 +6,7 @@ import { Store } from "@ngrx/store";
 import { Observable, map } from "rxjs";
 import * as TaskSelectors from "../../store/task.selectors";
 import * as TaskActions from "../../store/task.actions";
+import { Task } from "../../models/task.model";
 
 @Component({
   selector: "app-task-page",
@@ -20,7 +21,10 @@ import * as TaskActions from "../../store/task.actions";
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="md:col-span-1">
-          <app-task-form></app-task-form>
+          <app-task-form
+            [taskToEdit]="taskToEdit"
+            (cancelEdit)="onCancelEdit()"
+          ></app-task-form>
 
           <ng-container
             *ngIf="{
@@ -54,7 +58,7 @@ import * as TaskActions from "../../store/task.actions";
         </div>
 
         <div class="md:col-span-2">
-          <app-task-list></app-task-list>
+          <app-task-list (editTask)="onEditTask($event)"></app-task-list>
         </div>
       </div>
     </div>
@@ -66,6 +70,7 @@ export class TaskPageComponent implements OnInit {
   completedTasks$: Observable<any[]>;
   activeTasks$: Observable<any[]>;
   totalTasks$: Observable<number>;
+  taskToEdit: Task | null = null;
 
   constructor(private store: Store) {
     this.completedTasks$ = this.store.select(
@@ -80,5 +85,13 @@ export class TaskPageComponent implements OnInit {
   ngOnInit(): void {
     // Ensure tasks are loaded when component initializes
     this.store.dispatch(TaskActions.loadTasks());
+  }
+
+  onEditTask(task: Task): void {
+    this.taskToEdit = task;
+  }
+
+  onCancelEdit(): void {
+    this.taskToEdit = null;
   }
 }

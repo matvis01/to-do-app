@@ -15,68 +15,79 @@ export class TaskService {
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
 
-    // Initialize with sample data if needed
+    // Initialize with initial data if needed
     if (this.isBrowser) {
+      this.loadTasksFromStorage();
+    } else {
+      // Server-side initial data
+      this.tasks = this.getInitialTasks();
+    }
+  }
+
+  private loadTasksFromStorage(): void {
+    try {
       const storedTasks = localStorage.getItem(this.STORAGE_KEY);
 
       if (!storedTasks) {
-        const initialTasks: Task[] = [
-          {
-            id: uuidv4(),
-            title: "Learn Angular",
-            description: "Study Angular framework basics and advanced concepts",
-            completed: false,
-            createdAt: new Date(),
-          },
-          {
-            id: uuidv4(),
-            title: "Master NgRx",
-            description: "Learn state management with NgRx",
-            completed: false,
-            createdAt: new Date(),
-          },
-        ];
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(initialTasks));
-        this.tasks = initialTasks;
+        // Initialize with default tasks if storage is empty
+        this.tasks = this.getInitialTasks();
+        this.saveTasksToStorage();
       } else {
-        this.tasks = JSON.parse(storedTasks);
+        // Parse stored tasks and ensure dates are properly converted
+        const parsedTasks = JSON.parse(storedTasks);
+        this.tasks = parsedTasks.map((task: any) => ({
+          ...task,
+          createdAt: new Date(task.createdAt),
+        }));
       }
-    } else {
-      // Server-side initial data
-      this.tasks = [
-        {
-          id: uuidv4(),
-          title: "Learn Angular",
-          description: "Study Angular framework basics and advanced concepts",
-          completed: false,
-          createdAt: new Date(),
-        },
-        {
-          id: uuidv4(),
-          title: "Master NgRx",
-          description: "Learn state management with NgRx",
-          completed: false,
-          createdAt: new Date(),
-        },
-      ];
+    } catch (error) {
+      console.error("Error loading tasks from storage:", error);
+      this.tasks = this.getInitialTasks();
     }
+  }
+
+  private saveTasksToStorage(): void {
+    if (this.isBrowser) {
+      try {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.tasks));
+      } catch (error) {
+        console.error("Error saving tasks to storage:", error);
+      }
+    }
+  }
+
+  private getInitialTasks(): Task[] {
+    return [
+      {
+        id: uuidv4(),
+        title: "Learn Angular",
+        description: "Study Angular framework basics and advanced concepts",
+        completed: false,
+        createdAt: new Date(),
+      },
+      {
+        id: uuidv4(),
+        title: "Master NgRx",
+        description: "Learn state management with NgRx",
+        completed: false,
+        createdAt: new Date(),
+      },
+    ];
   }
 
   getTasks(): Observable<Task[]> {
     if (this.isBrowser) {
-      const tasks = localStorage.getItem(this.STORAGE_KEY);
-      this.tasks = tasks ? JSON.parse(tasks) : [];
+      this.loadTasksFromStorage();
     }
-    return of(this.tasks);
+    return of([...this.tasks]); // Return a copy to prevent unintended mutations
   }
 
   getTask(id: string): Observable<Task | undefined> {
     if (this.isBrowser) {
-      const tasks = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || "[]");
-      this.tasks = tasks;
+      this.loadTasksFromStorage();
     }
     const task = this.tasks.find((t: Task) => t.id === id);
-    return of(task);
+    return of(task ? { ...task } : undefined); // Return a copy if found
   }
 
   addTask(title: string, description?: string): Observable<Task> {
@@ -88,36 +99,24 @@ export class TaskService {
       createdAt: new Date(),
     };
 
-    this.tasks.push(newTask);
+    this.tasks = [...this.tasks, newTask];
+    this.saveTasksToStorage();
 
-    if (this.isBrowser) {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.tasks));
-    }
-
-    return of(newTask);
+    return of({ ...newTask }); // Return a copy
   }
 
   updateTask(updatedTask: Task): Observable<void> {
-    const index = this.tasks.findIndex((t: Task) => t.id === updatedTask.id);
+    this.tasks = this.tasks.map((task) =>
+      task.id === updatedTask.id ? { ...updatedTask } : task
+    );
 
-    if (index !== -1) {
-      this.tasks[index] = updatedTask;
-
-      if (this.isBrowser) {
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.tasks));
-      }
-    }
-
+    this.saveTasksToStorage();
     return of(undefined);
   }
 
   deleteTask(id: string): Observable<void> {
     this.tasks = this.tasks.filter((t: Task) => t.id !== id);
-
-    if (this.isBrowser) {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.tasks));
-    }
-
+    this.saveTasksToStorage();
     return of(undefined);
   }
 }
